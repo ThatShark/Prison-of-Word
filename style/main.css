@@ -1,0 +1,38 @@
+* {
+    margin: 0px;
+    padding: 0px;
+    border: none;
+    outline: none;
+    user-select: none;
+}
+
+html, body{
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+#canvas-container {
+    --container-width: 100vw;
+    --container-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-content: center;
+    width: var(--container-width);
+    height: var(--container-height);
+    overflow: hidden;
+    background-color: black;
+}
+#view-canvas {
+    --w-h-ratio: 1920/1080;
+    width: min(var(--container-height) * ( var(--w-h-ratio) ), var(--container-width));
+    height: min(var(--container-width) / ( var(--w-h-ratio) ), var(--container-height));
+    /* background-image: url(image/Menu.png); */
+    /* background-position: center center; */
+    /* background-repeat: no-repeat; */
+    /* background-size: 100%; */
+    background-color: rgb(64, 64, 64);
+}
