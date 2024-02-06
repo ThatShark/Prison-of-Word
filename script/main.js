@@ -1,5 +1,6 @@
 const THEME_COLOR = 'white';
 const THEME_COLOR_DARK = '#6585ad';
+const LOCKED_COLOR = 'gray';
 
 (async () => {
     /* basic canvas set-up */
@@ -35,13 +36,19 @@ const THEME_COLOR_DARK = '#6585ad';
 
     /* render method */
     const menuData = await getData('data/menu.json');
+	const dialogData = await getData('data/dialog.json');
     async function renderMenu(menuLabel) {
         const data = menuData[menuLabel];
         if (!data) return;
         ctx.save();
         async function drawButton(element) {
-            ctx.strokeStyle = THEME_COLOR_DARK;
-			ctx.fillStyle = THEME_COLOR_DARK;
+			if (element.label === "尚未解鎖") {
+				ctx.strokeStyle = LOCKED_COLOR;
+				ctx.fillStyle = LOCKED_COLOR;
+			} else {
+				ctx.strokeStyle = THEME_COLOR_DARK;
+				ctx.fillStyle = THEME_COLOR_DARK;
+			}
 			ctx.lineWidth = 5;
 			ctx.font = '50px 微軟正黑';
 			ctx.textAlign = 'center';
@@ -51,10 +58,17 @@ const THEME_COLOR_DARK = '#6585ad';
 				MX > element.display?.x && MY > element.display?.y &&
 				MX < element.display?.x + element.display?.w && MY < element.display?.y + element.display?.h
 			) {
-				ctx.strokeStyle = THEME_COLOR;
-				ctx.fillStyle = THEME_COLOR;
+				if (element.label === "尚未解鎖") {
+					ctx.strokeStyle = LOCKED_COLOR;
+					ctx.fillStyle = LOCKED_COLOR;
+				} else {
+					ctx.strokeStyle = THEME_COLOR;
+					ctx.fillStyle = THEME_COLOR;
+				}
 				if (MC) {
-					currentScene = element.destination;
+					if (element.label !== "尚未解鎖") {
+						currentScene = element.destination;
+					}
 					MC = false;
 				}
 			}
@@ -99,7 +113,7 @@ const THEME_COLOR_DARK = '#6585ad';
 					for (let r = 0; r < element.button.length; r++) {
 						for (let c = 0; c < element.button[r].length; c++) {
 							let buttonDisplayData = {
-								x: element.display?.x + (element.display?.xInc !== undefined ? element.display?.xInc : 0) * c,
+								x: element.display?.x + (element.display?.xInc !== undefined ? element.display?.xInc : 0) * c + (r !== 0 ? (120 / (element.button.length-1)) * r : 0),
 								y: element.display?.y + (element.display?.yInc !== undefined ? element.display?.yInc : 0) * r,
 								w: element.display?.w,
 								h: element.display?.h
@@ -125,45 +139,45 @@ const THEME_COLOR_DARK = '#6585ad';
         if (sceneName.includes('menu-')) {
             await renderMenu(sceneName.replace('menu-', ''));
         } else {
-            switch(sceneName) {
-				case 'dialog':
-					let action = `${gameVariable['s']}-${gameVariable['v']}-${gameVariable['o']}`;
-					let dialog = {
-						"image": false,
-						"message": "",
-						"words": [],
-						"at": gameVariable['place'],
-						"check": gameVariable['object']
-					};
-					if (`${action}@${gameVariable['place']}>${gameVariable['object']}` in dialogData) {
-						dialog = dialogData[`${action}@${gameVariable['place']}>${gameVariable['object']}`];
-					} else if (`${action}@${gameVariable['place']}>*` in dialogData) {
-						dialog = dialogData[`${action}@${gameVariable['place']}>*`];
-					} else if (`${action}@*>*` in dialogData) {
-						dialog = dialogData[`${action}@*>*`];
-					}
-					if (dialog.image) {
-						ctx.drawImage(await getImage(dialog.image), 0, 0, CW, CH);
-					}
-					ctx.lineWidth = 5;
-					ctx.font = '50px 微軟正黑';
-					ctx.textAlign = 'center';
-					ctx.textBaseline = 'middle';
-					ctx.fillStyle = '#00000088';
-					ctx.strokeStyle = THEME_COLOR;
-					ctx.fillRect(470, 730, 1400, 300);
-					ctx.strokeRect(470, 730, 1400, 300);
-					
-					ctx.fillText(dialog.message, 470, 730);
-					ctx.fillRect(50, 50, 370, 980);
-					ctx.strokeRect(50, 50, 370, 980);
-					ctx.strokeStyle = '#ffc107';
-					ctx.strokeRect(470, 590, 440, 100);
-					ctx.strokeStyle = '#ff5722';
-					ctx.strokeRect(470+(440+40), 590, 440, 100);
-					ctx.strokeStyle = '#ffc107';
-					ctx.strokeRect(470+(440+40)*2, 590, 440, 100);
-					break;
+			if (sceneName.includes('dialog-')) {
+				let dialogLevel = sceneName.replace('dialog-', '');
+
+				let action = `${gameVariable['s']}-${gameVariable['v']}-${gameVariable['o']}`;
+				let dialog = {
+					"image": false,
+					"message": "",
+					"words": [],
+					"at": gameVariable['place'],
+					"check": gameVariable['object']
+				};
+				if (`${action}@${gameVariable['place']}>${gameVariable['object']}` in dialogData.story[dialogLevel - 1]) {
+					dialog = dialogData.story[dialogLevel - 1].dialog[`${action}@${gameVariable['place']}>${gameVariable['object']}`];
+				} else if (`${action}@${gameVariable['place']}>*` in dialogData.story[dialogLevel - 1]) {
+					dialog = dialogData.story[dialogLevel - 1].dialog[`${action}@${gameVariable['place']}>*`];
+				} else if (`${action}@*>*` in dialogData.story[dialogLevel - 1]) {
+					dialog = dialogData.story[dialogLevel - 1].dialog[`${action}@*>*`];
+				}
+				if (dialog.image) {
+					ctx.drawImage(await getImage(dialog.image), 0, 0, CW, CH);
+				}
+				ctx.lineWidth = 5;
+				ctx.font = '50px 微軟正黑';
+				ctx.textAlign = 'center';
+				ctx.textBaseline = 'middle';
+				ctx.fillStyle = '#00000088';
+				ctx.strokeStyle = THEME_COLOR;
+				ctx.fillRect(470, 730, 1400, 300);
+				ctx.strokeRect(470, 730, 1400, 300);
+				
+				ctx.fillText(dialog.message, 470, 730);
+				ctx.fillRect(50, 50, 370, 980);
+				ctx.strokeRect(50, 50, 370, 980);
+				ctx.strokeStyle = '#ffc107';
+				ctx.strokeRect(470, 590, 440, 100);
+				ctx.strokeStyle = '#ff5722';
+				ctx.strokeRect(470+(440+40), 590, 440, 100);
+				ctx.strokeStyle = '#ffc107';
+				ctx.strokeRect(470+(440+40)*2, 590, 440, 100);
 			}
         }
     }

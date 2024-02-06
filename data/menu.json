@@ -15,19 +15,15 @@
 				"type": "buttonList",
 				"display": {
 					"x": 500,
-					"y": 500,
+					"y": 550,
 					"w": 920,
-					"h": 120,
-					"yInc": 180
+					"h": 150,
+					"yInc": 225
 				},
 				"button": [
 					{
 						"label": "章節",
 						"destination": "menu-charter"
-					},
-					{
-						"label": "設定",
-						"destination": "menu-settings"
 					},
 					{
 						"label": "關於",
@@ -63,70 +59,25 @@
 			{
 				"type": "buttonGrid",
 				"display": {
-					"x": 260,
-					"y": 380,
-					"w": 120,
-					"h": 120,
-					"xInc": 180, 
-					"yInc": 180
+					"x": 480,
+					"y": 500,
+					"w": 250,
+					"h": 180,
+					"xInc": 300, 
+					"yInc": 250
 				},
 				"button": [
 					[
-						{ "label": "1" , "destination": "dialog" },
-						{ "label": "2" , "destination": "dialog" },
-						{ "label": "3" , "destination": "dialog" },
-						{ "label": "4" , "destination": "dialog" },
-						{ "label": "5" , "destination": "dialog" },
-						{ "label": "6" , "destination": "dialog" },
-						{ "label": "7" , "destination": "dialog" },
-						{ "label": "8" , "destination": "dialog" }
+						{ "label": "1" , "destination": "dialog-1" },
+						{ "label": "尚未解鎖" , "destination": "dialog-" },
+						{ "label": "尚未解鎖" , "destination": "dialog-" }
 					], 
 					[
-						{ "label": "9" , "destination": "dialog" },
-						{ "label": "10" , "destination": "dialog" },
-						{ "label": "11" , "destination": "dialog" },
-						{ "label": "12" , "destination": "dialog" },
-						{ "label": "13" , "destination": "dialog" },
-						{ "label": "14" , "destination": "dialog" },
-						{ "label": "15" , "destination": "dialog" },
-						{ "label": "16" , "destination": "dialog" }
-					], 
-					[
-						{ "label": "17" , "destination": "dialog" },
-						{ "label": "18" , "destination": "dialog" },
-						{ "label": "19" , "destination": "dialog" },
-						{ "label": "20" , "destination": "dialog" },
-						{ "label": "21" , "destination": "dialog" },
-						{ "label": "22" , "destination": "dialog" },
-						{ "label": "23" , "destination": "dialog" },
-						{ "label": "24" , "destination": "dialog" }
+						{ "label": "尚未解鎖" , "destination": "dialog-" },
+						{ "label": "尚未解鎖" , "destination": "dialog-" },
+						{ "label": "尚未解鎖" , "destination": "dialog-" }
 					]
 				]
-			}
-		]
-	},
-	"settings": {
-		"elements": [
-			{
-				"type": "image",
-				"display": {
-					"x": 0,
-					"y": 0,
-					"w": 1920,
-					"h": 1080
-				},
-				"url": "./image/lobby.jpg"
-			}, 
-			{
-				"type": "button",
-				"display": {
-					"x": 50,
-					"y": 50,
-					"w": 200,
-					"h": 120
-				},
-				"label": "返回",
-				"destination": "menu-main"
 			}
 		]
 	},

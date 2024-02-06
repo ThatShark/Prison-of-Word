@@ -1,0 +1,36 @@
+{   
+    "story": [
+        {
+            "label": "1",
+            "dialog": [
+                {
+                    "--@房間>*": {
+                        "image": "./image/lobby.jpg",
+                        "message": "",
+                        "words": [
+                            "我", "查看", "門"
+                        ], 
+                        "at": "房間", 
+                        "check": "無"
+                    }, 
+                    "我-查看-門@房間>*": {
+                        "image": "./image/lobby.jpg",
+                        "message": "門上有著深深的爪痕但似乎未上鎖。",
+                        "words": [
+                            "打開"
+                        ], 
+                        "at": "房間", 
+                        "check": "門"
+                    }, 
+                    "我-查看-門@房間>門": {
+                        "image": "./image/lobby.jpg",
+                        "message": "門上有著深深的爪痕，就如同剛才所看到的一樣。",
+                        "words": [], 
+                        "at": "房間", 
+                        "check": "門"
+                    }
+                }
+            ]
+        }
+    ]
+}
