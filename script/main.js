@@ -107,7 +107,7 @@
 					for (let r = 0; r < element.button.length; r++) {
 						for (let c = 0; c < element.button[r].length; c++) {
 							let buttonDisplayData = {
-								x: element.display?.x + (element.display?.xInc !== undefined ? element.display?.xInc : 0) * c + (r !== 0 ? (120 / (element.button.length - 1)) * r : 0),
+								x: element.display?.x + (element.display?.xInc !== undefined ? element.display?.xInc : 0) * c + (120 / (element.button.length - 1)) * r,
 								y: element.display?.y + (element.display?.yInc !== undefined ? element.display?.yInc : 0) * r,
 								w: element.display?.w,
 								h: element.display?.h
@@ -124,8 +124,8 @@
 
 	/* change background */
 	const gameVariable = {};
-	gameVariable['place'] = '房間';
-	gameVariable['object'] = '無';
+	gameVariable['place'] = '*';
+	gameVariable['object'] = '*';
 	gameVariable['s'] = '';
 	gameVariable['v'] = '';
 	gameVariable['o'] = '';
@@ -165,7 +165,14 @@
 			ctx.fillRect(470, 730, 1400, 300);
 			ctx.strokeRect(470, 730, 1400, 300);
 			// words box
-			ctx.fillText(dialog.message, 470, 730);
+			if (dialog?.color != undefined) {
+				ctx.fillStyle = dialog?.color;
+				ctx.strokeStyle = dialog?.color;
+			} else {
+				ctx.fillStyle = 'white';
+				ctx.strokeStyle = 'white';
+			}
+			ctx.fillText(dialog.message, 470, 800);
 			// dialog message
 			ctx.fillRect(50, 50, 370, 980);
 			ctx.strokeRect(50, 50, 370, 980);
