@@ -156,6 +156,7 @@
 				ctx.drawImage(await getImage(dialog.image), 0, 0, CW, CH);
 				// scene background
 			}
+			// words box
 			ctx.lineWidth = 5;
 			ctx.font = '50px 微軟正黑';
 			ctx.textAlign = 'center';
@@ -164,7 +165,8 @@
 			ctx.strokeStyle = color.buttonHover;
 			ctx.fillRect(470, 730, 1400, 300);
 			ctx.strokeRect(470, 730, 1400, 300);
-			// words box
+
+			// dialog message
 			if (dialog?.color != undefined) {
 				ctx.fillStyle = dialog?.color;
 				ctx.strokeStyle = dialog?.color;
@@ -173,18 +175,22 @@
 				ctx.strokeStyle = 'white';
 			}
 			ctx.fillText(dialog.message, 470, 800);
-			// dialog message
+			// dialog message box
+			ctx.fillStyle = '#00000088';
+			ctx.strokeStyle = color.buttonHover;
 			ctx.fillRect(50, 50, 370, 980);
 			ctx.strokeRect(50, 50, 370, 980);
-			// dialog message box
+
+			// word box - s
 			ctx.strokeStyle = color.wordBoxSAndO;
 			ctx.strokeRect(470, 590, 440, 100);
-			// word box - s
-			ctx.strokeRect(470 + (440 + 40) * 2, 590, 440, 100);
 			// word box - o
+			ctx.strokeRect(470 + (440 + 40) * 2, 590, 440, 100);
+			// word box - v
 			ctx.strokeStyle = color.wordBoxV;
 			ctx.strokeRect(470 + (440 + 40), 590, 440, 100);
-			// word box - v
+
+			// back button
 			await drawButton({
 				type: 'button',
 				display: {
@@ -196,7 +202,6 @@
 				label: '返回',
 				destination: ['menu', 'charter']
 			});
-			// back button
 
 			MC = false;
 		}
