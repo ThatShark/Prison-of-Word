@@ -3,9 +3,9 @@
 	const color = {
 		buttonHover: 'white',
 		buttonDefault: '#6585ad',
-		buttonDisabled: 'gray', 
-		buttonBgc: '#00000055', 
-		wordBoxSAndO: '#ffc107', 
+		buttonDisabled: 'gray',
+		buttonBgc: '#00000055',
+		wordBoxSAndO: '#ffc107',
 		wordBoxV: '#ff5722'
 	};
 
@@ -124,8 +124,8 @@
 
 	/* change background */
 	const gameVariable = {};
-	gameVariable['place'] = '*';
-	gameVariable['object'] = '*';
+	gameVariable['place'] = '未初始化';
+	gameVariable['object'] = '無';
 	gameVariable['s'] = '';
 	gameVariable['v'] = '';
 	gameVariable['o'] = '';
@@ -145,28 +145,41 @@
 				"at": gameVariable['place'],
 				"check": gameVariable['object']
 			};
-			if (`${action}@${gameVariable['place']}>${gameVariable['object']}` in currentStoryDialog) {
-				dialog = currentStoryDialog[`${action}@${gameVariable['place']}>${gameVariable['object']}`];
-			} else if (`${action}@${gameVariable['place']}>*` in currentStoryDialog) {
-				dialog = currentStoryDialog[`${action}@${gameVariable['place']}>*`];
-			} else if (`${action}@*>*` in currentStoryDialog) {
-				dialog = currentStoryDialog[`${action}@*>*`];
+			for (let dialogKey of [
+				`${action}@${gameVariable['place']}>${gameVariable['object']}`,
+				`${action}@${gameVariable['place']}>*`,
+				`${action}@*>*`
+			]) {
+				if (dialogKey in currentStoryDialog) {
+					dialog = currentStoryDialog[dialogKey];
+					if (dialog.at !== false) gameVariable['place'] = dialog.at;
+					if (dialog.check !== false) gameVariable['object'] = dialog.check;
+					break;
+				}
 			}
 			if (dialog.image) {
-				ctx.drawImage(await getImage(dialog.image), 0, 0, CW, CH);
-				// scene background
+				ctx.drawImage(await getImage(dialog.image), 0, 0, CW, CH); // scene background
 			}
 			// words box
 			ctx.lineWidth = 5;
-			ctx.font = '50px 微軟正黑';
-			ctx.textAlign = 'center';
-			ctx.textBaseline = 'middle';
+			var fontSize = 50;
+			ctx.font = `${fontSize}px 微軟正黑`;
+			ctx.textAlign = 'left';
+			ctx.textBaseline = 'top';
 			ctx.fillStyle = '#00000088';
 			ctx.strokeStyle = color.buttonHover;
-			ctx.fillRect(470, 730, 1400, 300);
-			ctx.strokeRect(470, 730, 1400, 300);
+			var dialogBoxDisplay = { x: 470, y: 730, w: 1400, h: 300 };
+			with ({ x, y, w, h } = dialogBoxDisplay) {
+				ctx.fillRect(x, y, w, h);
+				ctx.strokeRect(x, y, w, h);
+			}
 
 			// dialog message
+			var dialogBoxPadding = 50;
+			var lineSpacing = 0;
+			var lineLength = Math.floor((dialogBoxDisplay.w - dialogBoxPadding * 2) / fontSize);
+			var lineNumber = Math.ceil(dialog.message.length / lineLength);
+			var maxLineNumber = Math.floor((dialogBoxDisplay.h - dialogBoxPadding * 2) / (fontSize + lineSpacing));
 			if (dialog?.color != undefined) {
 				ctx.fillStyle = dialog?.color;
 				ctx.strokeStyle = dialog?.color;
@@ -174,7 +187,13 @@
 				ctx.fillStyle = 'white';
 				ctx.strokeStyle = 'white';
 			}
-			ctx.fillText(dialog.message, 470, 800);
+			for (let i = 0; i < lineNumber; i += 1) {
+				let lineContent = dialog.message.split('').splice(i * lineLength, lineLength).join('');
+				ctx.fillText(lineContent, dialogBoxDisplay.x + dialogBoxPadding, dialogBoxDisplay.y + dialogBoxPadding + i * (fontSize + lineSpacing));
+			}
+			if (lineNumber > maxLineNumber) {
+				throw Error(`'dialog.message' overflow! Message length is ${dialog.message.length}, but it only allow ${lineLength} * ${maxLineNumber}`);
+			}
 			// dialog message box
 			ctx.fillStyle = '#00000088';
 			ctx.strokeStyle = color.buttonHover;
