@@ -23,11 +23,11 @@
 				"button": [
 					{
 						"label": "章節",
-						"destination": "menu-charter"
+						"destination": ["menu", "charter"]
 					},
 					{
 						"label": "關於",
-						"destination": "menu-about"
+						"destination": ["menu", "about"]
 					}
 				]
 			}
@@ -54,7 +54,7 @@
 					"h": 120
 				},
 				"label": "返回",
-				"destination": "menu-main"
+				"destination": ["menu", "main"]
 			}, 
 			{
 				"type": "buttonGrid",
@@ -68,22 +68,20 @@
 				},
 				"button": [
 					[
-						{ "label": "1" , "destination": "dialog-1" },
-						{ "label": "尚未解鎖" , "destination": "dialog-" },
-						{ "label": "尚未解鎖" , "destination": "dialog-" }
+						{ "label": "1", "destination": ["dialog", 1] },
+						{ "label": "2", "destination": ["dialog", 2], "class": ["disabled"]},
+						{ "label": "3", "destination": ["dialog", 3], "class": ["disabled"]}
 					], 
 					[
-						{ "label": "尚未解鎖" , "destination": "dialog-" },
-						{ "label": "尚未解鎖" , "destination": "dialog-" },
-						{ "label": "尚未解鎖" , "destination": "dialog-" }
+						{ "label": "4", "destination": ["dialog", 4], "class": ["disabled"]},
+						{ "label": "5", "destination": ["dialog", 5], "class": ["disabled"]},
+						{ "label": "6", "destination": ["dialog", 6], "class": ["disabled"]}
 					]
 				]
 			}
 		]
 	},
 	"about": {
-		"bgi": false,
-		"bgc": "blue",
 		"elements": [
 			{
 				"type": "image",
@@ -104,7 +102,7 @@
 					"h": 120
 				},
 				"label": "返回",
-				"destination": "menu-main"
+				"destination": ["menu", "main"]
 			}
 		]
 	}
