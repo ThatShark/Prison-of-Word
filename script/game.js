@@ -8,7 +8,8 @@ async function initGameCycle(initData) {
 	/* all manner of colors */
 	const color = {
 		buttonHover: 'white',
-		buttonDefault: '#6585ad',
+		// buttonDefault: '#6585ad',
+		buttonDefault: '#b5986a',
 		buttonDisabled: 'gray',
 		buttonBgc: '#00000055',
 		wordBoxSAndO: '#ffc107',
