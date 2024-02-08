@@ -22,11 +22,11 @@
 				},
 				"button": [
 					{
-						"label": "章節",
+						"label": "章節選擇",
 						"destination": ["menu", "charter"]
 					},
 					{
-						"label": "關於",
+						"label": "製作團隊",
 						"destination": ["menu", "about"]
 					}
 				]

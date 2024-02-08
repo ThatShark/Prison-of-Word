@@ -5,7 +5,7 @@ async function initGameCycle(initData) {
 	const { cvs, ctx } = initData;
 	const { mouse } = initData;
 
-	/* all manner of colors */
+	/* all manner of colors and fonts */
 	const color = {
 		buttonHover: 'white',
 		// buttonDefault: '#6585ad',
@@ -15,6 +15,10 @@ async function initGameCycle(initData) {
 		wordBoxSAndO: '#ffc107',
 		wordBoxV: '#ff5722'
 	};
+	const font = {
+		// default: '微軟正黑'
+		default: 'Zpix'
+	}
 
 	/* get all manner of materials */
 	async function getData(url, type) {
@@ -49,7 +53,7 @@ async function initGameCycle(initData) {
 	}
 	async function drawButton(element) {
 		ctx.lineWidth = 5;
-		ctx.font = '50px 微軟正黑';
+		ctx.font = `50px ${font.default}`;
 		ctx.textAlign = 'center';
 		ctx.textBaseline = 'middle';
 		let mouseHover = isHover(mouse, element.display);
@@ -196,16 +200,16 @@ async function initGameCycle(initData) {
 					}
 				}
 
-				var fontSize = 50;
-				var dialogBoxPadding = 50;
-				var lineSpacing = 0;
-				var lineLength = Math.floor((dialogBoxDisplay.w - dialogBoxPadding * 2) / fontSize);
-				var lineNumber = Math.ceil(dialog.message.length / lineLength);
-				var maxLineNumber = Math.floor((dialogBoxDisplay.h - dialogBoxPadding * 2) / (fontSize + lineSpacing));
+				let fontSize = 50;
+				let dialogBoxPadding = 50;
+				let lineSpacing = 0;
+				let lineLength = Math.floor((dialogBoxDisplay.w - dialogBoxPadding * 2) / fontSize);
+				let maxLineNumber = Math.floor((dialogBoxDisplay.h - dialogBoxPadding * 2) / (fontSize + lineSpacing));
 
 				let attribute = [];
 				let messageData = [];
-				let charList = dialog.message.split('');
+				// let charList = dialog.message.split('');
+				let charList = [...dialog.message]; // 不拆分非組合型 emoji
 
 				while (charList.length > 0) {
 					let char = charList.shift();
@@ -240,6 +244,11 @@ async function initGameCycle(initData) {
 						});
 					}
 				}
+
+				let lineNumber = Math.ceil(messageData.length / lineLength);
+				if (lineNumber > maxLineNumber) {
+					throw Error(`'dialog.message' overflow! Message length is ${messageData.length}, but it only allow ${lineLength * maxLineNumber}`);
+				}
 				sceneVariable['dialogMessageData'] = messageData;
 				sceneVariable['dialogMessageAniChar'] = 0;
 				sceneVariable['dialogMessageAniTimeLeft'] = 0;
@@ -271,6 +280,7 @@ async function initGameCycle(initData) {
 				let charData = sceneVariable['dialogMessageData'][sceneVariable['dialogMessageAniChar']];
 				let charMiniSec = parseInt(charData.attribute.miniSec);
 				while (aniDeltaTime >= charMiniSec) {
+					tempCtx.save();
 					if ('italic' in charData.attribute || 'oblique' in charData.attribute) charData.attribute.style = 'oblique';
 					if ('bold' in charData.attribute || 'bolder' in charData.attribute) charData.attribute.weight = 'bolder';
 					if ('light' in charData.attribute || 'lighter' in charData.attribute) charData.attribute.weight = 'lighter';
@@ -279,9 +289,16 @@ async function initGameCycle(initData) {
 						charData.attribute.variant ? charData.attribute.variant : 'normal',
 						charData.attribute.weight ? charData.attribute.weight : 'normal',
 						`${charData.attribute.size ? parseFloat(charData.attribute.size) : 5}px`,
-						charData.attribute.family ? charData.attribute.family : '微軟正黑'
+						charData.attribute.family ? charData.attribute.family : font.default
 					].join(' ');
 					tempCtx.fillStyle = charData.attribute.color ? charData.attribute.color : 'white';
+					if ('glow' in charData.attribute) {
+						tempCtx.shadowBlur = 10;
+						tempCtx.shadowColor = tempCtx.fillStyle;
+					} else if ('shadow' in charData.attribute) {
+						tempCtx.shadowBlur = 10;
+						tempCtx.shadowColor = charData.attribute.shadow ? charData.attribute.shadow : 'black';
+					}
 					tempCtx.fillText(charData.char, charData.x, charData.y);
 
 					aniDeltaTime -= charMiniSec;
@@ -290,12 +307,10 @@ async function initGameCycle(initData) {
 					charData = sceneVariable['dialogMessageData'][sceneVariable['dialogMessageAniChar']];
 					if (charData === undefined) break;
 					charMiniSec = parseInt(charData.attribute.miniSec);
+					tempCtx.restore();
 				}
 			}
 			ctx.drawImage(tempCvs, 0, 0);
-			if (lineNumber > maxLineNumber) {
-				throw Error(`'dialog.message' overflow! Message length is ${dialog.message.length}, but it only allow ${lineLength} * ${maxLineNumber}`);
-			}
 			// words box
 			ctx.fillStyle = '#00000088';
 			ctx.strokeStyle = color.buttonHover;
@@ -361,7 +376,7 @@ async function initGameCycle(initData) {
 				ctx.strokeStyle = partOfSpeech == 'v' ? color.wordBoxV : color.wordBoxSAndO;
 				ctx.fillStyle = 'white';
 				ctx.strokeRect(wordData.x, wordData.y, wordData.w, wordData.h);
-				ctx.font = `${fontSize}px 微軟正黑`;
+				ctx.font = `${fontSize}px ${font.default}`;
 				ctx.fillText(wordData.label, wordData.x + wordData.w / 2, wordData.y + wordData.h / 2);
 			}
 			let deltaI = 0;

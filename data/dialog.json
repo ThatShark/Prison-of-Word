@@ -3,9 +3,18 @@
         {
             "label": "1",
             "dialog": {
+                "--@未初始化>*原本的": {
+                    "image": "./image/roomCeil.jpg",
+                    "message": "我迷糊地睜開雙眼，自己似乎被關在一個房間，房間內有一台電腦，還有一扇老舊的門。",
+                    "words": [
+                        "我", "走向", "門", "電腦"
+                    ], 
+                    "at": "房間", 
+                    "check": "無"
+                }, 
                 "--@未初始化>*": {
                     "image": "./image/roomCeil.jpg",
-                    "message": "我迷糊地睜開雙眼，\\miniSec_40{自己似乎被關在一個房間，房間內有一台電腦}，還有一扇老舊的\\bold{門}。",
+                    "message": "\\bold{\\color_#ffc107{\\glow{我}}}迷糊地睜開雙眼，\\miniSec_40{自己似乎被關在一個房間，房間內有一台\\bold{\\color_#ffc107{\\glow{電腦}}}}，還有一扇老舊的\\bold{\\color_#ffc107{\\glow{🚪}}}。",
                     "words": [
                         "我", "走向", "門", "電腦"
                     ], 
