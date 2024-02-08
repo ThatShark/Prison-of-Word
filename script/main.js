@@ -10,12 +10,23 @@
 	const mouse = { x: 0, y: 0, click: false, up: false, down: false, over: false, leave: false };
 	var gameCycle = await initGameCycle({ cvs, ctx, mouse, CW, CH });
 	let boundingRect = cvs.getBoundingClientRect();
-	cvs.addEventListener('mousemove', event => {
+	function updateMousePosition(event){
 		[mouse.x, mouse.y] = [(event.pageX - boundingRect.x) / boundingRect.width * CW, (event.pageY - boundingRect.y) / boundingRect.height * CH];
+	}
+	cvs.addEventListener('mousemove', event => {
+		updateMousePosition(event);
 	});
 	cvs.addEventListener('click', event => {
-		[mouse.x, mouse.y] = [(event.pageX - boundingRect.x) / boundingRect.width * CW, (event.pageY - boundingRect.y) / boundingRect.height * CH];
+		updateMousePosition(event);
 		mouse.click = true;
+	});
+	cvs.addEventListener('mousedown', event => {
+		updateMousePosition(event);
+		mouse.down = true;
+	});
+	cvs.addEventListener('mouseup', event => {
+		updateMousePosition(event);
+		mouse.up = true;
 	});
 	window.addEventListener("resize", () => {
 		boundingRect = cvs.getBoundingClientRect();

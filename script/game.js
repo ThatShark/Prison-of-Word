@@ -16,8 +16,8 @@ async function initGameCycle(initData) {
 	};
 
 	/* get all manner of materials */
-	async function getData(url) {
-		return await fetch(url).then(r => r.json());
+	async function getData(url, type) {
+		return await fetch(url).then(r => r[type]());
 	}
 	function loadMaterial(url, _constructor, eventName = 'onload') {
 		return new Promise(resolve => {
@@ -40,14 +40,18 @@ async function initGameCycle(initData) {
 	}
 
 	/* render method */
-	const menuData = await getData('data/menu.json');
-	const dialogData = await getData('data/dialog.json');
+	const menuData = await getData('data/menu.json', 'json');
+	const dialogData = await getData('data/dialog.json', 'json');
+	const partOfSpeechData = Object.fromEntries((await getData('data/partOfSpeech.txt', 'text'))?.replaceAll('\r', '').split('\n').map(line => line.split(' ')).map(KVPair => [KVPair[1], KVPair[0]]));
+	function isHover(mouse, display) {
+		return mouse.x > display.x && mouse.y > display.y && mouse.x < display.x + display.w && mouse.y < display.y + display.h;
+	}
 	async function drawButton(element) {
 		ctx.lineWidth = 5;
 		ctx.font = '50px 微軟正黑';
 		ctx.textAlign = 'center';
 		ctx.textBaseline = 'middle';
-		let mouseHover = mouse.x > element.display?.x && mouse.y > element.display?.y && mouse.x < element.display?.x + element.display?.w && mouse.y < element.display?.y + element.display?.h
+		let mouseHover = isHover(mouse, element.display);
 		ctx.fillStyle = color.buttonBgc;
 		ctx.fillRect(element.display.x, element.display.y, element.display.w, element.display.h);
 		if (element.class?.includes('disabled')) {
@@ -144,11 +148,13 @@ async function initGameCycle(initData) {
 			await renderMenu(sceneId);
 		} else if (sceneType == 'dialog') {
 			if (sceneChanged) {
+				sceneVariable['draggingWord'] = undefined;
 				sceneVariable['place'] = '未初始化';
 				sceneVariable['object'] = '無';
 				sceneVariable['s'] = '';
 				sceneVariable['v'] = '';
 				sceneVariable['o'] = '';
+				sceneVariable['words'] = [];
 				sceneVariable['currentDialogKey'] = `--@${sceneVariable['place']}>*`;
 			}
 
@@ -182,6 +188,9 @@ async function initGameCycle(initData) {
 						sceneVariable['currentDialogKey'] = dialogKey;
 						if (dialog.at !== false) sceneVariable['place'] = dialog.at;
 						if (dialog.check !== false) sceneVariable['object'] = dialog.check;
+						dialog.words.forEach(word => {
+							if (!sceneVariable['words'].includes(word)) sceneVariable['words'].push(word);
+						});
 						break;
 					}
 				}
@@ -239,10 +248,12 @@ async function initGameCycle(initData) {
 			if (sceneVariable['currentDialogKey'] in currentStoryDialog) {
 				dialog = currentStoryDialog[sceneVariable['currentDialogKey']];
 			}
+			ctx.fillStyle = 'black';
+			ctx.fillRect(0, 0, CW, CH);
 			if (dialog.image) {
 				ctx.drawImage(await getImage(dialog.image), 0, 0, CW, CH); // scene background
 			}
-			// words box
+			// dialog message box
 			ctx.lineWidth = 5;
 			ctx.fillStyle = '#00000088';
 			ctx.strokeStyle = color.buttonHover;
@@ -284,20 +295,97 @@ async function initGameCycle(initData) {
 			if (lineNumber > maxLineNumber) {
 				throw Error(`'dialog.message' overflow! Message length is ${dialog.message.length}, but it only allow ${lineLength} * ${maxLineNumber}`);
 			}
-			// dialog message box
+			// words box
 			ctx.fillStyle = '#00000088';
 			ctx.strokeStyle = color.buttonHover;
-			ctx.fillRect(50, 50, 370, 980);
-			ctx.strokeRect(50, 50, 370, 980);
+			var wordsBoxDisplay = { x: 50, y: 50, w: 370, h: 980 };
+			var wordsBoxPadding = 50;
+			var wordHeight = 100;
+			var wordGap = 30;
+			var { x, y, w, h } = wordsBoxDisplay;
+			ctx.fillRect(x, y, w, h);
+			ctx.strokeRect(x, y, w, h);
+			var [x, y, w, h] = [0, 0, 0, 0]
 
+			var wordBoxDisplay = {
+				s: { x: 470, y: 590, w: 440, h: wordHeight },
+				v: { x: 470 + (440 + 40), y: 590, w: 440, h: wordHeight },
+				o: { x: 470 + (440 + 40) * 2, y: 590, w: 440, h: wordHeight }
+			}
 			// word box - s
 			ctx.strokeStyle = color.wordBoxSAndO;
-			ctx.strokeRect(470, 590, 440, 100);
+			ctx.strokeRect(wordBoxDisplay.s.x, wordBoxDisplay.s.y, wordBoxDisplay.s.w, wordBoxDisplay.s.h);
 			// word box - o
-			ctx.strokeRect(470 + (440 + 40) * 2, 590, 440, 100);
+			ctx.strokeRect(wordBoxDisplay.o.x, wordBoxDisplay.o.y, wordBoxDisplay.o.w, wordBoxDisplay.o.h);
 			// word box - v
 			ctx.strokeStyle = color.wordBoxV;
-			ctx.strokeRect(470 + (440 + 40), 590, 440, 100);
+			ctx.strokeRect(wordBoxDisplay.v.x, wordBoxDisplay.v.y, wordBoxDisplay.v.w, wordBoxDisplay.v.h);
+
+			async function drawWord(ctx, wordData) {
+				let fontSize = 50;
+				ctx.lineWidth = 5;
+				ctx.textAlign = 'center';
+				ctx.textBaseline = 'middle';
+				let mouseHover = isHover(mouse, wordData);
+				let partOfSpeech = partOfSpeechData[wordData.label];
+				let scale = 1;
+				if (sceneVariable['draggingWord'] === wordData.label) {
+					[wordData.x, wordData.y] = [mouse.x - wordData.w / 2, mouse.y - wordData.h / 2];
+					scale = 0.8;
+					if (mouse.up) {
+						sceneVariable['draggingWord'] = undefined;
+						['s', 'v', 'o'].forEach(type => {
+							if (
+								isHover(mouse, wordBoxDisplay[type]) &&
+								((partOfSpeech == 'v' && type == partOfSpeech) ||
+									(partOfSpeech == 'n' && ['s', 'o'].includes(type)))
+							) sceneVariable[type] = wordData.label;
+						});
+						scale = 1;
+					}
+				} else if (mouseHover) {
+					scale = 1.05;
+					if (mouse.down) {
+						sceneVariable['draggingWord'] = wordData.label;
+						if (wordData.type !== undefined) sceneVariable[wordData.type] = '';
+
+					}
+				}
+
+				[wordData.x, wordData.y, wordData.w, wordData.h] = [wordData.x + wordData.w * (1 - scale) / 2, wordData.y + wordData.h * (1 - scale) / 2, wordData.w * scale, wordData.h * scale]
+				fontSize *= scale;
+
+				ctx.fillStyle = color.buttonBgc;
+				ctx.fillRect(wordData.x, wordData.y, wordData.w, wordData.h);
+				ctx.strokeStyle = partOfSpeech == 'v' ? color.wordBoxV : color.wordBoxSAndO;
+				ctx.fillStyle = 'white';
+				ctx.strokeRect(wordData.x, wordData.y, wordData.w, wordData.h);
+				ctx.font = `${fontSize}px 微軟正黑`;
+				ctx.fillText(wordData.label, wordData.x + wordData.w / 2, wordData.y + wordData.h / 2);
+			}
+			let deltaI = 0;
+			for (let i = 0; i < sceneVariable['words'].length; i++) {
+				ctx.fillStyle = 'black';
+				ctx.strokeStyle = 'gray';
+				let wordData = {
+					x: wordsBoxDisplay.x + wordsBoxPadding,
+					y: wordsBoxDisplay.y + wordsBoxPadding + (i - deltaI) * (wordHeight + wordGap),
+					w: wordsBoxDisplay.w - wordsBoxPadding * 2,
+					h: wordHeight,
+					label: sceneVariable['words'][i],
+					type: undefined
+				};
+				for (let type of ['s', 'v', 'o']) {
+					if (sceneVariable[type] == wordData.label) {
+						let { x, y, w, h } = wordBoxDisplay[type];
+						[wordData.x, wordData.y, wordData.w, wordData.h] = [x, y, w, h];
+						wordData.type = type;
+						deltaI++;
+						break;
+					}
+				}
+				drawWord(ctx, wordData);
+			}
 
 			// back button
 			await drawButton({
@@ -312,8 +400,10 @@ async function initGameCycle(initData) {
 				destination: ['menu', 'charter']
 			});
 
-			mouse.click = false;
 		}
+		mouse.click = false;
+		mouse.down = false;
+		mouse.up = false;
 	}
 
 	/* background */
