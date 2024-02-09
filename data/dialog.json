@@ -35,12 +35,12 @@
                 }, 
                 "我-檢查-紙條@房間>門": {
                     "image": "./image/roomCeil.jpg",
-                    "message": "紙條被對摺，似乎需要打開它",
+                    "message": "紙條被對摺，似乎需要\\glow_v{打開}它",
                     "words": ["打開"], 
                     "at": "房間", 
                     "check": "紙條"
                 }, 
-                "我-打開-紙條@房間>門": {
+                "我-打開-紙條@房間>紙條": {
                     "image": "./image/roomCeil.jpg",
                     "message": "我打開了紙條，紙條上字跡歪扭歪扭，不過能勉強看出：「需要透過電腦印出\"Hello World!\"才能離開房間。」",
                     "words": [], 
@@ -74,6 +74,13 @@
                     "words": [], 
                     "at": "房間", 
                     "check": false
+                }, 
+                "default": {
+                    "image": "./image/roomCeil.jpg",
+                    "message": "我腦中冒出了奇怪的想法，還是忽視好了",
+                    "words": [], 
+                    "at": "", 
+                    "check": ""
                 }
             }
         }

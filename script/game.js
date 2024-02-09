@@ -201,13 +201,15 @@ async function initGameCycle(initData) {
 						sceneVariable.newWords.push(...sceneVariable.getWords);
 						break;
 					} else {
+						dialog = currentStoryDialog["default"];
+						sceneVariable.currentDialogKey = "default";
 						sceneVariable.getWords = [];
 					}
 				}
 
 				let fontSize = 50;
 				let dialogBoxPadding = 50;
-				let lineSpacing = 0;
+				let lineSpacing = 10;
 				let lineLength = Math.floor((dialogBoxDisplay.w - dialogBoxPadding * 2) / fontSize);
 				let maxLineNumber = Math.floor((dialogBoxDisplay.h - dialogBoxPadding * 2) / (fontSize + lineSpacing));
 
