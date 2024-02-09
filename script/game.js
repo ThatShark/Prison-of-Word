@@ -181,8 +181,8 @@ async function initGameCycle(initData) {
 				"image": false,
 				"message": "",
 				"words": [],
-				"at": sceneVariable.place,
-				"check": sceneVariable.object
+				"scene": sceneVariable.place,
+				"at": sceneVariable.object
 			};
 			if ((actionChanged && ![sceneVariable.s, sceneVariable.v, sceneVariable.o].includes('')) || sceneChanged) {
 				sceneVariable.currentDialogKey = '--@*>*';
@@ -194,8 +194,8 @@ async function initGameCycle(initData) {
 					if (dialogKey in currentStoryDialog) {
 						dialog = currentStoryDialog[dialogKey];
 						sceneVariable.currentDialogKey = dialogKey;
-						if (dialog.at !== false) sceneVariable.place = dialog.at;
-						if (dialog.check !== false) sceneVariable.object = dialog.check;
+						if (dialog.scene !== false) sceneVariable.place = dialog.scene;
+						if (dialog.at !== false) sceneVariable.object = dialog.at;
 						sceneVariable.getWords = dialog.words.filter(word => !sceneVariable.words.includes(word));
 						sceneVariable.words.push(...sceneVariable.getWords);
 						sceneVariable.newWords.push(...sceneVariable.getWords);

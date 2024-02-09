@@ -95,4 +95,5 @@
 
 1. more, more 故事
 2. 增加default劇情(非預期情況的劇情)
-TODO: 將place設為`place-object`
+3. 重新更改劇情寫法(其實是我發現該怎麼寫了)
+4. 將`place`改成`scene`，`check`改成`at`，增加可讀性(`scene`所在場景，`at`為所處位置)

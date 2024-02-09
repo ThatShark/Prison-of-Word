@@ -9,78 +9,113 @@
                     "words": [
                         "我", "走向", "檢查", "門", "電腦"
                     ], 
-                    "at": "房間", 
-                    "check": "無"
+                    "scene": "房間", 
+                    "at": "無"
+                }, 
+                "我-走向-門@房間>門": {
+                    "image": "./image/roomCeil.jpg",
+                    "message": "我原地踏步，顯得自己有點蠢。",
+                    "words": [], 
+                    "scene": false, 
+                    "at": false
                 }, 
                 "我-走向-門@房間>*": {
                     "image": "./image/roomCeil.jpg",
                     "message": "我走到了門邊。",
                     "words": [], 
-                    "at": "房間", 
-                    "check": "門"
+                    "scene": false, 
+                    "at": "門"
                 }, 
                 "我-檢查-門@房間>門": {
                     "image": "./image/roomCeil.jpg",
                     "message": "門上有一張對摺的\\glow_n{紙條}，以暗褐色的磁鐵吸附著。",
                     "words": ["紙條"], 
-                    "at": "房間", 
-                    "check": "門"
+                    "scene": false, 
+                    "at": false
+                }, 
+                "我-檢查-門@房間>*": {
+                    "image": "./image/roomCeil.jpg",
+                    "message": "想要找門？門都沒有！我離那兒還有一段距離呢！",
+                    "words": [], 
+                    "scene": false, 
+                    "at": false
                 }, 
                 "我-打開-門@房間>門": {
                     "image": "./image/roomCeil.jpg",
                     "message": "就如紙條所說，門已被上鎖，還是先照著紙條上的做吧。",
                     "words": [], 
-                    "at": "房間", 
-                    "check": "門"
+                    "scene": false, 
+                    "at": false
+                }, 
+                "我-打開-門@房間>*": {
+                    "image": "./image/roomCeil.jpg",
+                    "message": "我將自己的手升到最長，卻還是勾不著門把，於是自己只能大聲喊出：「芝麻開門！」，想當然爾無事發生。",
+                    "words": [], 
+                    "scene": false, 
+                    "at": false
                 }, 
                 "我-檢查-紙條@房間>門": {
                     "image": "./image/roomCeil.jpg",
-                    "message": "紙條被對摺，似乎需要\\glow_v{打開}它",
+                    "message": "紙條被對摺，似乎需要\\glow_v{打開}它。",
                     "words": ["打開"], 
-                    "at": "房間", 
-                    "check": "紙條"
+                    "scene": false, 
+                    "at": false
                 }, 
-                "我-打開-紙條@房間>紙條": {
+                "我-檢查-紙條@房間>*": {
                     "image": "./image/roomCeil.jpg",
-                    "message": "我打開了紙條，紙條上字跡歪扭歪扭，不過能勉強看出：「需要透過電腦印出\"Hello World!\"才能離開房間。」",
+                    "message": "紙條距離自己有點遠，需要再靠近一點才能看得更加清楚",
                     "words": [], 
-                    "at": "房間", 
-                    "check": "紙條"
+                    "scene": false, 
+                    "at": false
                 }, 
-                "我-檢查-門@房間>*": {
+                "我-打開-紙條@房間>門": {
                     "image": "./image/roomCeil.jpg",
-                    "message": "我離那兒還有一段距離呢！想要找門？門都沒有！",
+                    "message": "我打開了紙條，紙條上字跡歪扭歪扭，不過還是能勉強看出：「需要透過電腦印出\"Hello World!\"才能離開房間。」",
                     "words": [], 
-                    "at": "房間", 
-                    "check": false
+                    "scene": false, 
+                    "at": false
+                }, 
+                "我-打開-紙條@房間>*": {
+                    "image": "./image/roomCeil.jpg",
+                    "message": "我嘗試使用念力，但於事無補。",
+                    "words": [], 
+                    "scene": false, 
+                    "at": false
+                }, 
+                "我-走向-電腦@房間>電腦": {
+                    "image": "./image/roomCeil.jpg",
+                    "message": "我原地踏步，顯得自己有點蠢。",
+                    "words": [], 
+                    "scene": false, 
+                    "at": false
                 }, 
                 "我-走向-電腦@房間>*": {
                     "image": "./image/roomCeil.jpg",
                     "message": "我走到了電腦旁邊。",
                     "words": [], 
-                    "at": "房間", 
-                    "check": "電腦"
+                    "scene": false, 
+                    "at": "電腦"
                 }, 
                 "我-檢查-電腦@房間>電腦": {
                     "image": "./image/roomCeil.jpg",
                     "message": "一台未開機的電腦。",
                     "words": [], 
-                    "at": "房間", 
-                    "check": "電腦"
+                    "scene": false, 
+                    "at": false
                 }, 
                 "我-檢查-電腦@房間>*": {
                     "image": "./image/roomCeil.jpg",
                     "message": "電腦是多麼觸目可及，卻又多麼的遙遠...",
                     "words": [], 
-                    "at": "房間", 
-                    "check": false
+                    "scene": false, 
+                    "at": false
                 }, 
                 "default": {
                     "image": "./image/roomCeil.jpg",
                     "message": "我腦中冒出了奇怪的想法，還是忽視好了",
                     "words": [], 
-                    "at": "", 
-                    "check": ""
+                    "scene": false, 
+                    "at": false
                 }
             }
         }
