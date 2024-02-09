@@ -51,8 +51,9 @@ async function initGameCycle(initData) {
 	function isHover(mouse, display) {
 		return mouse.x > display.x && mouse.y > display.y && mouse.x < display.x + display.w && mouse.y < display.y + display.h;
 	}
+	let buttonLineWidth = 5;
 	async function drawButton(element) {
-		ctx.lineWidth = 5;
+		ctx.lineWidth = buttonLineWidth;
 		ctx.font = `50px ${font.default}`;
 		ctx.textAlign = 'center';
 		ctx.textBaseline = 'middle';
@@ -132,44 +133,46 @@ async function initGameCycle(initData) {
 
 	/* change background */
 	const sceneVariable = {};
-	const tempCvs = document.createElement('canvas'),
-		tempCtx = tempCvs.getContext('2d');
-	[tempCvs.width, tempCvs.height] = [CW, CH];
-	let lastTime = Date.now();
+
+	const tempCvs = {}, tempCtx = {};
+	['dialog', 'words', 'draggingWord'].forEach(key => {
+		tempCvs[key] = document.createElement('canvas');
+		tempCtx[key] = tempCvs[key].getContext('2d');
+		[tempCvs[key].width, tempCvs[key].height] = [CW, CH];
+	});
+	let lastTime = Date.now(), currentTime = undefined;
 	async function renderScene(sceneIndex) {
 		var [sceneType, sceneId] = sceneIndex;
 		var sceneIndexText = `${sceneType}-${sceneId}`;
 		let sceneChanged = false;
-		if (sceneIndexText !== sceneVariable['laseSceneIndexText']) {
-			sceneVariable['laseSceneIndexText'] = sceneIndexText;
+		if (sceneIndexText !== sceneVariable.laseSceneIndexText) {
+			sceneVariable.laseSceneIndexText = sceneIndexText;
 			sceneChanged = true;
 		}
-
-		let currentTime = Date.now();
-		let deltaTime = currentTime - lastTime;
-		lastTime = currentTime;
 
 		if (sceneType == 'menu') {
 			await renderMenu(sceneId);
 		} else if (sceneType == 'dialog') {
 			if (sceneChanged) {
-				sceneVariable['draggingWord'] = undefined;
-				sceneVariable['place'] = '未初始化';
-				sceneVariable['object'] = '無';
-				sceneVariable['s'] = '';
-				sceneVariable['v'] = '';
-				sceneVariable['o'] = '';
-				sceneVariable['words'] = [];
-				sceneVariable['currentDialogKey'] = `--@${sceneVariable['place']}>*`;
+				sceneVariable.draggingWord = undefined;
+				sceneVariable.place = '未初始化';
+				sceneVariable.object = '無';
+				sceneVariable.s = '';
+				sceneVariable.v = '';
+				sceneVariable.o = '';
+				sceneVariable.words = [];
+				sceneVariable.newWords = [];
+				sceneVariable.getWords = [];
+				sceneVariable.currentDialogKey = `--@${sceneVariable.place}>*`;
 			}
 
 			let dialogLevel = parseInt(sceneId);
 			let currentStoryDialog = dialogData.story[dialogLevel - 1].dialog;
 
-			let action = `${sceneVariable['s']}-${sceneVariable['v']}-${sceneVariable['o']}`;
+			let action = `${sceneVariable.s}-${sceneVariable.v}-${sceneVariable.o}`;
 			let actionChanged = false;
-			if (action !== sceneVariable['lastAction']) {
-				sceneVariable['lastAction'] = action;
+			if (action !== sceneVariable.lastAction) {
+				sceneVariable.lastAction = action;
 				actionChanged = true;
 			}
 
@@ -178,25 +181,27 @@ async function initGameCycle(initData) {
 				"image": false,
 				"message": "",
 				"words": [],
-				"at": sceneVariable['place'],
-				"check": sceneVariable['object']
+				"at": sceneVariable.place,
+				"check": sceneVariable.object
 			};
-			if ((actionChanged && ![sceneVariable['s'], sceneVariable['v'], sceneVariable['o']].includes('')) || sceneChanged) {
-				sceneVariable['currentDialogKey'] = '--@*>*';
+			if ((actionChanged && ![sceneVariable.s, sceneVariable.v, sceneVariable.o].includes('')) || sceneChanged) {
+				sceneVariable.currentDialogKey = '--@*>*';
 				for (let dialogKey of [
-					`${action}@${sceneVariable['place']}>${sceneVariable['object']}`,
-					`${action}@${sceneVariable['place']}>*`,
+					`${action}@${sceneVariable.place}>${sceneVariable.object}`,
+					`${action}@${sceneVariable.place}>*`,
 					`${action}@*>*`
 				]) {
 					if (dialogKey in currentStoryDialog) {
 						dialog = currentStoryDialog[dialogKey];
-						sceneVariable['currentDialogKey'] = dialogKey;
-						if (dialog.at !== false) sceneVariable['place'] = dialog.at;
-						if (dialog.check !== false) sceneVariable['object'] = dialog.check;
-						dialog.words.forEach(word => {
-							if (!sceneVariable['words'].includes(word)) sceneVariable['words'].push(word);
-						});
+						sceneVariable.currentDialogKey = dialogKey;
+						if (dialog.at !== false) sceneVariable.place = dialog.at;
+						if (dialog.check !== false) sceneVariable.object = dialog.check;
+						sceneVariable.getWords = dialog.words.filter(word => !sceneVariable.words.includes(word));
+						sceneVariable.words.push(...sceneVariable.getWords);
+						sceneVariable.newWords.push(...sceneVariable.getWords);
 						break;
+					} else {
+						sceneVariable.getWords = [];
 					}
 				}
 
@@ -249,14 +254,15 @@ async function initGameCycle(initData) {
 				if (lineNumber > maxLineNumber) {
 					throw Error(`'dialog.message' overflow! Message length is ${messageData.length}, but it only allow ${lineLength * maxLineNumber}`);
 				}
-				sceneVariable['dialogMessageData'] = messageData;
-				sceneVariable['dialogMessageAniChar'] = 0;
-				sceneVariable['dialogMessageAniTimeLeft'] = 0;
-				sceneVariable['dialogMessageAniStartTime'] = currentTime;
-				[tempCvs.width, tempCvs.height] = [CW, CH]; // 將 tempCvs 重置為透明畫布
+				sceneVariable.wordBoxScrollY = 0;
+				sceneVariable.dialogMessageData = messageData;
+				sceneVariable.dialogMessageAniChar = 0;
+				sceneVariable.dialogMessageAniTimeLeft = 0;
+				sceneVariable.dialogMessageAniStartTime = currentTime;
+				tempCtx.dialog.clearRect(0, 0, CW, CH);
 			}
-			if (sceneVariable['currentDialogKey'] in currentStoryDialog) {
-				dialog = currentStoryDialog[sceneVariable['currentDialogKey']];
+			if (sceneVariable.currentDialogKey in currentStoryDialog) {
+				dialog = currentStoryDialog[sceneVariable.currentDialogKey];
 			}
 			ctx.fillStyle = 'black';
 			ctx.fillRect(0, 0, CW, CH);
@@ -264,7 +270,7 @@ async function initGameCycle(initData) {
 				ctx.drawImage(await getImage(dialog.image), 0, 0, CW, CH); // scene background
 			}
 			// dialog message box
-			ctx.lineWidth = 5;
+			ctx.lineWidth = buttonLineWidth;
 			ctx.fillStyle = '#00000088';
 			ctx.strokeStyle = color.buttonHover;
 			var { x, y, w, h } = dialogBoxDisplay;
@@ -273,44 +279,50 @@ async function initGameCycle(initData) {
 			var [x, y, w, h] = [0, 0, 0, 0]
 
 			// dialog message
-			if (sceneVariable['dialogMessageAniChar'] < sceneVariable['dialogMessageData'].length) {
-				tempCtx.textAlign = 'left';
-				tempCtx.textBaseline = 'top';
-				let aniDeltaTime = currentTime - sceneVariable['dialogMessageAniStartTime'] - sceneVariable['dialogMessageAniTimeLeft'];
-				let charData = sceneVariable['dialogMessageData'][sceneVariable['dialogMessageAniChar']];
+			if (sceneVariable.dialogMessageAniChar < sceneVariable.dialogMessageData.length) {
+				tempCtx.dialog.textAlign = 'left';
+				tempCtx.dialog.textBaseline = 'top';
+				let aniDeltaTime = currentTime - sceneVariable.dialogMessageAniStartTime - sceneVariable.dialogMessageAniTimeLeft;
+				let charData = sceneVariable.dialogMessageData[sceneVariable.dialogMessageAniChar];
 				let charMiniSec = parseInt(charData.attribute.miniSec);
 				while (aniDeltaTime >= charMiniSec) {
-					tempCtx.save();
+					tempCtx.dialog.save();
 					if ('italic' in charData.attribute || 'oblique' in charData.attribute) charData.attribute.style = 'oblique';
 					if ('bold' in charData.attribute || 'bolder' in charData.attribute) charData.attribute.weight = 'bolder';
 					if ('light' in charData.attribute || 'lighter' in charData.attribute) charData.attribute.weight = 'lighter';
-					tempCtx.font = [
+					tempCtx.dialog.font = [
 						charData.attribute.style ? charData.attribute.style : 'normal',
 						charData.attribute.variant ? charData.attribute.variant : 'normal',
 						charData.attribute.weight ? charData.attribute.weight : 'normal',
 						`${charData.attribute.size ? parseFloat(charData.attribute.size) : 5}px`,
 						charData.attribute.family ? charData.attribute.family : font.default
 					].join(' ');
-					tempCtx.fillStyle = charData.attribute.color ? charData.attribute.color : 'white';
+					charData.x += charData.attribute.deltaX ? parseInt(charData.attribute.deltaX) : 0;
+					charData.y += charData.attribute.deltaY ? parseInt(charData.attribute.deltaY) : 0;
+					tempCtx.dialog.fillStyle = charData.attribute.color ? charData.attribute.color : 'white';
 					if ('glow' in charData.attribute) {
-						tempCtx.shadowBlur = 10;
-						tempCtx.shadowColor = tempCtx.fillStyle;
+						tempCtx.dialog.shadowBlur = 10;
+						tempCtx.dialog.shadowColor =
+							charData.attribute.glow === 'n' ? color.wordBoxSAndO :
+								charData.attribute.glow === 'v' ? color.wordBoxV :
+									charData.attribute.glow ? charData.attribute.glow :
+										tempCtx.dialog.fillStyle;
 					} else if ('shadow' in charData.attribute) {
-						tempCtx.shadowBlur = 10;
-						tempCtx.shadowColor = charData.attribute.shadow ? charData.attribute.shadow : 'black';
+						tempCtx.dialog.shadowBlur = 10;
+						tempCtx.dialog.shadowColor = charData.attribute.shadow ? charData.attribute.shadow : 'black';
 					}
-					tempCtx.fillText(charData.char, charData.x, charData.y);
+					tempCtx.dialog.fillText(charData.char, charData.x, charData.y);
 
 					aniDeltaTime -= charMiniSec;
-					sceneVariable['dialogMessageAniTimeLeft'] += charMiniSec;
-					sceneVariable['dialogMessageAniChar']++;
-					charData = sceneVariable['dialogMessageData'][sceneVariable['dialogMessageAniChar']];
+					sceneVariable.dialogMessageAniTimeLeft += charMiniSec;
+					sceneVariable.dialogMessageAniChar++;
+					charData = sceneVariable.dialogMessageData[sceneVariable.dialogMessageAniChar];
 					if (charData === undefined) break;
 					charMiniSec = parseInt(charData.attribute.miniSec);
-					tempCtx.restore();
+					tempCtx.dialog.restore();
 				}
 			}
-			ctx.drawImage(tempCvs, 0, 0);
+			ctx.drawImage(tempCvs.dialog, 0, 0);
 			// words box
 			ctx.fillStyle = '#00000088';
 			ctx.strokeStyle = color.buttonHover;
@@ -322,6 +334,9 @@ async function initGameCycle(initData) {
 			ctx.fillRect(x, y, w, h);
 			ctx.strokeRect(x, y, w, h);
 			var [x, y, w, h] = [0, 0, 0, 0]
+			mouse.wheelPreventDefault = () => isHover(mouse, wordsBoxDisplay);
+			sceneVariable.wordBoxScrollY += mouse.deltaY * 0.5;
+			sceneVariable.wordBoxScrollY = Math.max(Math.min(sceneVariable.wordBoxScrollY, ((sceneVariable.words.length - ['s', 'v', 'o'].map(k => sceneVariable[k] !== '' ? 1 : 0).reduce((s, n) => s + n)) * (wordHeight + wordGap) - wordGap) - (wordsBoxDisplay.h - wordsBoxPadding * 2)), 0);
 
 			var wordBoxDisplay = {
 				s: { x: 470, y: 590, w: 440, h: wordHeight },
@@ -337,50 +352,82 @@ async function initGameCycle(initData) {
 			ctx.strokeStyle = color.wordBoxV;
 			ctx.strokeRect(wordBoxDisplay.v.x, wordBoxDisplay.v.y, wordBoxDisplay.v.w, wordBoxDisplay.v.h);
 
-			async function drawWord(ctx, wordData) {
+			function drawWord(wordData) {
 				let fontSize = 50;
-				ctx.lineWidth = 5;
-				ctx.textAlign = 'center';
-				ctx.textBaseline = 'middle';
 				let mouseHover = isHover(mouse, wordData);
 				let partOfSpeech = partOfSpeechData[wordData.label];
 				let scale = 1;
-				if (sceneVariable['draggingWord'] === wordData.label) {
+				let targetCtx = tempCtx.words;
+				let reFunc = () => { };
+				if (sceneVariable.draggingWord === wordData.label) {
 					[wordData.x, wordData.y] = [mouse.x - wordData.w / 2, mouse.y - wordData.h / 2];
 					scale = 0.8;
+					targetCtx = tempCtx.draggingWord;
 					if (mouse.up) {
-						sceneVariable['draggingWord'] = undefined;
+						sceneVariable.draggingWord = undefined;
 						['s', 'v', 'o'].forEach(type => {
 							if (
 								isHover(mouse, wordBoxDisplay[type]) &&
 								((partOfSpeech == 'v' && type == partOfSpeech) ||
 									(partOfSpeech == 'n' && ['s', 'o'].includes(type)))
-							) sceneVariable[type] = wordData.label;
+							) {
+								sceneVariable[type] = wordData.label;
+								let nw = sceneVariable.newWords;
+								nw.splice(nw.indexOf(wordData.label), 1);
+							}
 						});
 						scale = 1;
 					}
 				} else if (mouseHover) {
 					scale = 1.05;
 					if (mouse.down) {
-						sceneVariable['draggingWord'] = wordData.label;
-						if (wordData.type !== undefined) sceneVariable[wordData.type] = '';
-
+						if (wordData.type !== undefined || (wordData.type == undefined && isHover(mouse, wordsBoxDisplay))) {
+							sceneVariable.draggingWord = wordData.label;
+						}
+						if (wordData.type !== undefined) {
+							sceneVariable[wordData.type] = '';
+							reFunc = () => {
+								let sw = sceneVariable.words;
+								sw.push(sw.splice(sw.indexOf(wordData.label), 1)[0]);
+							};
+						};
 					}
 				}
 
-				[wordData.x, wordData.y, wordData.w, wordData.h] = [wordData.x + wordData.w * (1 - scale) / 2, wordData.y + wordData.h * (1 - scale) / 2, wordData.w * scale, wordData.h * scale]
+				targetCtx.save();
+
+				[wordData.x, wordData.y, wordData.w, wordData.h] = [wordData.x + wordData.w * (1 - scale) / 2, wordData.y + wordData.h * (1 - scale) / 2, wordData.w * scale, wordData.h * scale];
 				fontSize *= scale;
 
-				ctx.fillStyle = color.buttonBgc;
-				ctx.fillRect(wordData.x, wordData.y, wordData.w, wordData.h);
-				ctx.strokeStyle = partOfSpeech == 'v' ? color.wordBoxV : color.wordBoxSAndO;
-				ctx.fillStyle = 'white';
-				ctx.strokeRect(wordData.x, wordData.y, wordData.w, wordData.h);
-				ctx.font = `${fontSize}px ${font.default}`;
-				ctx.fillText(wordData.label, wordData.x + wordData.w / 2, wordData.y + wordData.h / 2);
+				targetCtx.lineWidth = buttonLineWidth;
+				targetCtx.textAlign = 'center';
+				targetCtx.textBaseline = 'middle';
+				if (sceneVariable.getWords.includes(wordData.label)) {
+					let aniMiniSec = 0.5e3;
+					let aniRate = Math.min((currentTime - sceneVariable.dialogMessageAniStartTime) / aniMiniSec, 1);
+					wordData.x += CW / 4 * (1 - aniRate);
+					targetCtx.globalAlpha = aniRate;
+				}
+				targetCtx.fillStyle = color.buttonBgc;
+				targetCtx.fillRect(wordData.x, wordData.y, wordData.w, wordData.h);
+				targetCtx.strokeStyle = partOfSpeech == 'v' ? color.wordBoxV : partOfSpeech == 'n' ? color.wordBoxSAndO : color.buttonDisabled;
+				if (sceneVariable.newWords.includes(wordData.label)) {
+					targetCtx.shadowBlur = 10;
+					targetCtx.shadowColor = targetCtx.strokeStyle;
+				}
+				targetCtx.fillStyle = 'white';
+				targetCtx.strokeRect(wordData.x, wordData.y, wordData.w, wordData.h);
+				targetCtx.font = `${fontSize}px ${font.default}`;
+				targetCtx.fillText(wordData.label, wordData.x + wordData.w / 2, wordData.y + wordData.h / 2);
+
+				targetCtx.restore();
+				return reFunc;
 			}
 			let deltaI = 0;
-			for (let i = 0; i < sceneVariable['words'].length; i++) {
+			let reFuncList = [];
+			tempCtx.words.clearRect(0, 0, CW, CH);
+			tempCtx.draggingWord.clearRect(0, 0, CW, CH);
+			for (let i = 0; i < sceneVariable.words.length; i++) {
 				ctx.fillStyle = 'black';
 				ctx.strokeStyle = 'gray';
 				let wordData = {
@@ -388,9 +435,10 @@ async function initGameCycle(initData) {
 					y: wordsBoxDisplay.y + wordsBoxPadding + (i - deltaI) * (wordHeight + wordGap),
 					w: wordsBoxDisplay.w - wordsBoxPadding * 2,
 					h: wordHeight,
-					label: sceneVariable['words'][i],
+					label: sceneVariable.words[i],
 					type: undefined
 				};
+				wordData.y -= sceneVariable.wordBoxScrollY;
 				for (let type of ['s', 'v', 'o']) {
 					if (sceneVariable[type] == wordData.label) {
 						let { x, y, w, h } = wordBoxDisplay[type];
@@ -400,8 +448,14 @@ async function initGameCycle(initData) {
 						break;
 					}
 				}
-				drawWord(ctx, wordData);
+				reFuncList.push(drawWord(wordData));
 			}
+			reFuncList.forEach(func => func());
+			var { y, h } = wordsBoxDisplay;
+			y += buttonLineWidth / 2;
+			h -= buttonLineWidth;
+			ctx.drawImage(tempCvs.words, 0, y, CW, h, 0, y, CW, h);
+			ctx.drawImage(tempCvs.draggingWord, 0, 0);
 
 			// back button
 			await drawButton({
@@ -415,18 +469,71 @@ async function initGameCycle(initData) {
 				label: '返回',
 				destination: ['menu', 'charter']
 			});
-
 		}
-		mouse.click = false;
-		mouse.down = false;
-		mouse.up = false;
 	}
 
 	/* background */
 	let currentScene = ['menu', 'main']; // or 'dialog'
+	let screenshotList = [];
 	async function gameCycle() {
+		currentTime = Date.now();
+		let deltaTime = currentTime - lastTime;
+		lastTime = currentTime;
 		await renderScene(currentScene);
-		setTimeout(gameCycle, 50);
+		/* screenshot method and animation */
+		if (mouse.screenshot) {
+			let url = cvs.toDataURL();
+			let image = await getImage(url);
+			screenshotList.push({ url, image, aniStartTime: currentTime });
+		}
+		for (let i = 0; i < screenshotList.length; i++) {
+			let screenshot = screenshotList[screenshotList.length - 1 - i];
+			let aniDeltaSec = (currentTime - screenshot.aniStartTime) / 1e3;
+			let x, y, w, h;
+			let endScale = 1 / 8;
+			let margin = 50;
+			ctx.lineWidth = 10;
+			ctx.strokeStyle = 'white';
+			let aniTimeLine = [0.5, 1, 0.5, 1];
+			let aniTimeAccu = [];
+			aniTimeLine.map((n, i) => {
+				let lastItem = aniTimeAccu[i - 1];
+				aniTimeAccu[i] = (lastItem !== undefined ? lastItem : 0) + aniTimeLine[i];
+			});
+			if (aniDeltaSec < aniTimeAccu[0]) {
+				let aniFragmentRate = aniDeltaSec / aniTimeLine[0];
+				[x, y, w, h] = [0, 0, CW, CH];
+				ctx.drawImage(screenshot.image, x, y, w, h);
+				ctx.strokeRect(x, y, w, h);
+				ctx.fillStyle = `rgba(255, 255, 255, ${0.5 * (1 - aniFragmentRate)})`;
+				ctx.fillRect(0, 0, CW, CH);
+				[x, y, w, h] = [-ctx.lineWidth / 2, -ctx.lineWidth / 2, 0, 0];
+			} else if (aniDeltaSec < aniTimeAccu[1]) {
+				let aniFragmentRate = (aniDeltaSec - aniTimeAccu[0]) / aniTimeLine[1];
+				[w, h] = [CW, CH].map(n => n * (aniFragmentRate * (endScale - 1) + 1));
+				[x, y] = [CW - w - margin * aniFragmentRate, CH - h - margin * aniFragmentRate];
+			} else if (aniDeltaSec < aniTimeAccu[2]) {
+				[w, h] = [CW, CH].map(n => n * endScale);
+				[x, y] = [CW - w - margin, CH - h - margin];
+			} else if (aniDeltaSec < aniTimeAccu[3]) {
+				let aniFragmentRate = (aniDeltaSec - aniTimeAccu[2]) / aniTimeLine[3];
+				[w, h] = [CW, CH].map(n => n * endScale);
+				[x, y] = [CW - w - margin + (w + margin + ctx.lineWidth / 2) * aniFragmentRate, CH - h - margin];
+			} else {
+				screenshotList.splice(screenshotList.length - 1 - i, 1);
+				i--;
+				let a = document.createElement('a');
+				a.href = screenshot.url;
+				a.download = `screenshot_${new Date(screenshot.aniStartTime).toJSON().replace('T', '_').replace('Z', '')}.jpg`;
+				a.click();
+			}
+			ctx.drawImage(screenshot.image, x, y, w, h);
+			ctx.strokeRect(x, y, w, h);
+		}
+		mouse.click = mouse.down = mouse.up = false;
+		mouse.deltaX = mouse.deltaY = mouse.deltaZ = mouse.deltaZoom = 0;
+		mouse.screenshot = false;
+		setTimeout(gameCycle, 30);
 	}
 	return gameCycle;
 }
