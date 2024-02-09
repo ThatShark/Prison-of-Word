@@ -95,3 +95,4 @@
 
 1. more, more 故事
 2. 增加default劇情(非預期情況的劇情)
+TODO: 將place設為`place-object`
