@@ -1,4 +1,6 @@
 'use strict';
+let tipText = "Tips: 黃色為名詞，橘色為動詞，將對應文字方框拖曳至對應方格能產生劇情！";
+
 async function initGameCycle(initData) {
 	/* declare shared object variable */
 	const { CW, CH } = initData;
@@ -78,6 +80,7 @@ async function initGameCycle(initData) {
 		ctx.strokeRect(element.display.x, element.display.y, element.display.w, element.display.h);
 		ctx.fillText(element.label, element.display.x + element.display.w / 2, element.display.y + element.display.h / 2);
 	}
+	let lastTipTime = Date.now(), currentTipTime = undefined;
 	async function renderMenu(menuLabel) {
 		const data = menuData[menuLabel];
 		if (!data) return;
@@ -85,6 +88,23 @@ async function initGameCycle(initData) {
 
 		for (let element of data.elements) {
 			switch (element.type) {
+				case 'randomText':
+					currentTipTime = Date.now();
+					if (currentTipTime - lastTipTime > 5000) {
+						lastTipTime = currentTipTime;
+						let newTipText = tipText;
+						while (newTipText === tipText) {
+							newTipText = element.labels[Math.floor(Math.random() * element.labels.length)];
+						}
+						tipText = newTipText;
+					}
+					if (element.fill !== undefined) {
+						ctx.fillStyle = element.fill;
+					} else {
+						ctx.fillStyle = color.buttonDefault;
+					}
+					ctx.fillText(tipText, element.display?.x + element.display?.w / 2, element.display?.y + element.display?.h / 2);
+					break;
 				case 'rect':
 					if (element.fill !== undefined) {
 						ctx.fillStyle = element.fill;
