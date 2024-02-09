@@ -110,6 +110,20 @@
                     "scene": false, 
                     "at": false
                 }, 
+                "我-打開-電腦@房間>電腦": {
+                    "image": "./image/roomCeil.jpg",
+                    "message": "按了遺下開關，電腦似乎沒有反應，左右查看，發現下面的\\glow_n{插頭}沒有接上\\glow_n{插座}。",
+                    "words": ["插頭", "插座"], 
+                    "scene": false, 
+                    "at": false
+                }, 
+                "我-打開-電腦@房間>*": {
+                    "image": "./image/roomCeil.jpg",
+                    "message": "我將兩手放在眼睛前方，接下來用手做勢將眼前的小小電腦掰開，從外人視角來看應該不會知道我在做什麼。",
+                    "words": [], 
+                    "scene": false, 
+                    "at": false
+                }, 
                 "default": {
                     "image": "./image/roomCeil.jpg",
                     "message": "我腦中冒出了奇怪的想法，還是忽視好了",
