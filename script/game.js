@@ -1,5 +1,5 @@
 'use strict';
-let tipText = "Tips: 黃色為名詞，橘色為動詞，將對應文字方框拖曳至對應方格能產生劇情！";
+let tipText = "黃色為名詞，橘色為動詞，將對應文字方框拖曳至對應方格能產生劇情！";
 
 async function initGameCycle(initData) {
 	/* declare shared object variable */
