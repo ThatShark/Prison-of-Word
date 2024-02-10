@@ -106,3 +106,10 @@
 * 2024/02/09 22:00 [m]
 
 1. 新增後台系統（未完成）
+
+* 2024/02/10 18:53 [m]
+
+1. 刪除與改寫`tipTime`、`tipText`等多餘的外層變數
+2. 解決`randomText`的`tipText`首次顯示無隨機之問題
+3. 按照繪製頻率，將`randomText`移至`switch-case`末尾
+4. 解決`randomText`的`textList`只有一元素時的卡死問題
