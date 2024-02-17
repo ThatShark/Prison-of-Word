@@ -1,3 +1,3 @@
 # Prison-of-Word
 
-![封面照片](//develop/image/introduce/game_cover.jpg)
+![封面照片](./develop/image/introduce/game_cover.jpg)
