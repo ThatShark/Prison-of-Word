@@ -1,5 +1,4 @@
 'use strict';
-let tipText = "黃色為名詞，橘色為動詞，將對應文字方框拖曳至對應方格能產生劇情！";
 
 async function initGameCycle(initData) {
 	/* declare shared object variable */
@@ -80,7 +79,6 @@ async function initGameCycle(initData) {
 		ctx.strokeRect(element.display.x, element.display.y, element.display.w, element.display.h);
 		ctx.fillText(element.label, element.display.x + element.display.w / 2, element.display.y + element.display.h / 2);
 	}
-	let lastTipTime = Date.now(), currentTipTime = undefined;
 	async function renderMenu(menuLabel) {
 		const data = menuData[menuLabel];
 		if (!data) return;
@@ -88,23 +86,6 @@ async function initGameCycle(initData) {
 
 		for (let element of data.elements) {
 			switch (element.type) {
-				case 'randomText':
-					currentTipTime = Date.now();
-					if (currentTipTime - lastTipTime > 5000) {
-						lastTipTime = currentTipTime;
-						let newTipText = tipText;
-						while (newTipText === tipText) {
-							newTipText = element.labels[Math.floor(Math.random() * element.labels.length)];
-						}
-						tipText = newTipText;
-					}
-					if (element.fill !== undefined) {
-						ctx.fillStyle = element.fill;
-					} else {
-						ctx.fillStyle = color.buttonDefault;
-					}
-					ctx.fillText(tipText, element.display?.x + element.display?.w / 2, element.display?.y + element.display?.h / 2);
-					break;
 				case 'rect':
 					if (element.fill !== undefined) {
 						ctx.fillStyle = element.fill;
@@ -144,6 +125,26 @@ async function initGameCycle(initData) {
 							await drawButton({ display: buttonDisplayData, ...element.button[r][c] });
 						}
 					}
+					break;
+				case 'randomText':
+					if (!('tipText' in sceneVariable)) sceneVariable.tipText = new Map();
+					if (!sceneVariable.tipText.has(element)) sceneVariable.tipText.set(element, '');
+					if (!('lastTipTime' in sceneVariable) || currentTime - sceneVariable.lastTipTime > 5e3) {
+						sceneVariable.lastTipTime = currentTime;
+						let tipText = sceneVariable.tipText.get(element), newTipText;
+						if (element.textList.length > 1) {
+							do {
+								newTipText = element.textList[Math.floor(Math.random() * element.textList.length)];
+							} while (newTipText === tipText)
+						} else newTipText = element.textList[0];
+						sceneVariable.tipText.set(element, newTipText);
+					}
+					if (element.fill !== undefined) {
+						ctx.fillStyle = element.fill;
+					} else {
+						ctx.fillStyle = color.buttonDefault;
+					}
+					ctx.fillText(sceneVariable.tipText.get(element), element.display.x + element.display.w / 2, element.display.y + element.display.h / 2);
 					break;
 			}
 		}
