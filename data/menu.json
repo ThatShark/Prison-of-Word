@@ -32,6 +32,16 @@
 				]
 			},
 			{
+				"type": "rect",
+				"display": {
+					"x": 0,
+					"y": 950,
+					"w": 1920,
+					"h": 100
+				},
+				"fill": "#00000088"
+			},
+			{
 				"type": "randomText",
 				"display": {
 					"x": 0,
