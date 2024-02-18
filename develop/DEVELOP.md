@@ -113,3 +113,10 @@
 2. 解決`randomText`的`tipText`首次顯示無隨機之問題
 3. 按照繪製頻率，將`randomText`移至`switch-case`末尾
 4. 解決`randomText`的`textList`只有一元素時的卡死問題
+
+* 2024/02/18 15:51 [MaoHuPi]
+
+1. 將後臺系統獨立出來變成通用型編輯器[POW Game Manager](https://github.com/MaoHuPi/POWGameManager)
+2. 將當前遊戲劇情重寫成`POWProject`
+3. 加入`package`資料夾，並存放`JSZip/jszip.js`、`POWGameManager/POWPlayer.js`等工具程式碼
+4. `script/game.js`改以呼叫`package/POWGameManager/POWPlayer.js`來調用遊戲核心功能

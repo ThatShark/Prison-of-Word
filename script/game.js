@@ -47,8 +47,7 @@ async function initGameCycle(initData) {
 
 	/* render method */
 	const menuData = await getData('data/menu.json', 'json');
-	const dialogData = await getData('data/dialog.json', 'json');
-	const partOfSpeechData = Object.fromEntries((await getData('data/partOfSpeech.txt', 'text'))?.replaceAll('\r', '').split('\n').map(line => line.split(' ')).map(KVPair => [KVPair[1], KVPair[0]]));
+	let player;
 	function isHover(mouse, display) {
 		return mouse.x > display.x && mouse.y > display.y && mouse.x < display.x + display.w && mouse.y < display.y + display.h;
 	}
@@ -174,21 +173,19 @@ async function initGameCycle(initData) {
 		if (sceneType == 'menu') {
 			await renderMenu(sceneId);
 		} else if (sceneType == 'dialog') {
+			let dialogLevel = parseInt(sceneId);
 			if (sceneChanged) {
 				sceneVariable.draggingWord = undefined;
-				sceneVariable.place = '未初始化';
-				sceneVariable.object = '無';
 				sceneVariable.s = '';
 				sceneVariable.v = '';
 				sceneVariable.o = '';
 				sceneVariable.words = [];
 				sceneVariable.newWords = [];
 				sceneVariable.getWords = [];
-				sceneVariable.currentDialogKey = `--@${sceneVariable.place}>*`;
+				player = new POWPlayer();
+				await player.load(`data/chapter${dialogLevel}.pow`);
+				sceneVariable.partOfSpeechData = player.getPOSDict();
 			}
-
-			let dialogLevel = parseInt(sceneId);
-			let currentStoryDialog = dialogData.story[dialogLevel - 1].dialog;
 
 			let action = `${sceneVariable.s}-${sceneVariable.v}-${sceneVariable.o}`;
 			let actionChanged = false;
@@ -206,27 +203,22 @@ async function initGameCycle(initData) {
 				"at": sceneVariable.object
 			};
 			if ((actionChanged && ![sceneVariable.s, sceneVariable.v, sceneVariable.o].includes('')) || sceneChanged) {
-				sceneVariable.currentDialogKey = '--@*>*';
-				for (let dialogKey of [
-					`${action}@${sceneVariable.place}>${sceneVariable.object}`,
-					`${action}@${sceneVariable.place}>*`,
-					`${action}@*>*`
-				]) {
-					if (dialogKey in currentStoryDialog) {
-						dialog = currentStoryDialog[dialogKey];
-						sceneVariable.currentDialogKey = dialogKey;
-						if (dialog.scene !== false) sceneVariable.place = dialog.scene;
-						if (dialog.at !== false) sceneVariable.object = dialog.at;
-						sceneVariable.getWords = dialog.words.filter(word => !sceneVariable.words.includes(word));
-						sceneVariable.words.push(...sceneVariable.getWords);
-						sceneVariable.newWords.push(...sceneVariable.getWords);
-						break;
-					} else {
-						dialog = currentStoryDialog["default"];
-						sceneVariable.currentDialogKey = "default";
-						sceneVariable.getWords = [];
-					}
+				let dialog;
+				if (sceneChanged) {
+					dialog = player.init();
+				} else {
+					dialog = player.exec([sceneVariable.s, sceneVariable.v, sceneVariable.o]);
 				}
+				console.log(dialog); // debug
+				sceneVariable.lastDialog = dialog;
+				sceneVariable.getWords = dialog.appendWords.filter(word => !sceneVariable.words.includes(word));
+				sceneVariable.words.push(...sceneVariable.getWords);
+				sceneVariable.newWords.push(...sceneVariable.getWords);
+				dialog.removeWords.forEach(word => {
+					if (sceneVariable.words.includes(word)) {
+						sceneVariable.words.splice(sceneVariable.words.indexOf(word), 1);
+					}
+				});
 
 				let fontSize = 50;
 				let dialogBoxPadding = 50;
@@ -284,13 +276,11 @@ async function initGameCycle(initData) {
 				sceneVariable.dialogMessageAniStartTime = currentTime;
 				tempCtx.dialog.clearRect(0, 0, CW, CH);
 			}
-			if (sceneVariable.currentDialogKey in currentStoryDialog) {
-				dialog = currentStoryDialog[sceneVariable.currentDialogKey];
-			}
+			dialog = sceneVariable.lastDialog;
 			ctx.fillStyle = 'black';
 			ctx.fillRect(0, 0, CW, CH);
 			if (dialog.image) {
-				ctx.drawImage(await getImage(dialog.image), 0, 0, CW, CH); // scene background
+				ctx.drawImage(dialog.image, 0, 0, CW, CH); // scene background
 			}
 			// dialog message box
 			ctx.lineWidth = buttonLineWidth;
@@ -378,7 +368,7 @@ async function initGameCycle(initData) {
 			function drawWord(wordData) {
 				let fontSize = 50;
 				let mouseHover = isHover(mouse, wordData);
-				let partOfSpeech = partOfSpeechData[wordData.label];
+				let partOfSpeech = sceneVariable.partOfSpeechData[wordData.label];
 				let scale = 1;
 				let targetCtx = tempCtx.words;
 				let reFunc = () => { };
